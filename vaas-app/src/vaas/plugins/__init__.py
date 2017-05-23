@@ -1,0 +1,1 @@
+import vaas.plugins.lorem
