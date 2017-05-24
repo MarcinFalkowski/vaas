@@ -41,7 +41,6 @@ INSTALLED_APPS = (
     'vaas.monitor',
     'vaas.account',
     'vaas.purger',
-    'vaas.plugins',
     'taggit',
     'django_ace',
 )

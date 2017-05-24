@@ -4,7 +4,6 @@ import loremipsum
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 
-
 logger = logging.getLogger('vaas')
 
 
