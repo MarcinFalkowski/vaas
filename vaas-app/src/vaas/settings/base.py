@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import
 import os
 from django.conf import global_settings
 from vaas.configuration.loader import YamlConfigLoader
+from vaas.configuration.plugin_handler import PLUGINS
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -43,7 +44,7 @@ INSTALLED_APPS = (
     'vaas.purger',
     'taggit',
     'django_ace',
-)
+) + PLUGINS
 
 MIDDLEWARE_CLASSES = (
     'djangosecure.middleware.SecurityMiddleware',
