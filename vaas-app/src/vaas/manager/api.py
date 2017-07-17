@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 
 from tastypie.resources import ModelResource, ALL_WITH_RELATIONS
 from tastypie.authorization import Authorization
@@ -68,6 +69,14 @@ class DirectorResource(ModelResource):
             'probe': ALL_WITH_RELATIONS,
             'cluster': ALL_WITH_RELATIONS
         }
+
+    def update_in_place(self, request, original_bundle, new_data):
+        logger = logging.getLogger('vaas')
+        logger.info("UPDATE_IN_PLACE !!! new_data: {}".format(new_data))
+
+        original_bundle.obj.new_data = new_data
+
+        return super(DirectorResource, self).update_in_place(request, original_bundle, new_data)
 
 
 class BackendResource(ModelResource):

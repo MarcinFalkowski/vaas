@@ -162,11 +162,25 @@ def clean_up_tags(sender, **kwargs):
 def director_update(**kwargs):
     logger = logging.getLogger('vaas')
     instance = kwargs['instance']
-    clusters_to_refresh = []
-    for cluster in instance.cluster.all():
-        logger.debug("director_update(): %s" % str(cluster))
-        if cluster not in clusters_to_refresh:
-            clusters_to_refresh.append(cluster)
+
+    clusters_to_refresh = get_clusters_to_refresh(instance)
+    logger.info("[director_update()] Clusters to refresh: {}".format(clusters_to_refresh))
     regenerate_and_reload_vcl(clusters_to_refresh)
+
+
+def get_clusters_to_refresh(instance):
+    all_clusters = list(instance.cluster.all())
+    try:
+        new_data = instance.new_data
+        if set(new_data.keys()) != {'cluster'}:
+            return all_clusters
+        new_clusters_set = set(new_data['cluster'])
+        if not new_clusters_set.issubset(set(all_clusters)):
+            return all_clusters
+        return list(new_clusters_set)
+
+    except AttributeError:
+        return all_clusters
+
 
 m2m_changed.connect(director_update, sender=Director.cluster.through)
