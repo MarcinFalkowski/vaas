@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from model_utils import FieldTracker
 from taggit.managers import TaggableManager
 
 from vaas.cluster.models import Dc, LogicalCluster
@@ -106,6 +107,8 @@ class Director(models.Model):
     enabled = models.BooleanField(default=True)
     remove_path = models.BooleanField(default=False)
     time_profile = models.ForeignKey(TimeProfile, on_delete=models.PROTECT)
+
+    tracker = FieldTracker()
 
     def mode_constructor(self):
         if self.mode == 'round-robin':

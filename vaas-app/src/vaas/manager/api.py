@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import copy
 
 from tastypie.resources import ModelResource, ALL_WITH_RELATIONS
 from tastypie.authorization import Authorization
@@ -72,9 +73,21 @@ class DirectorResource(ModelResource):
 
     def update_in_place(self, request, original_bundle, new_data):
         logger = logging.getLogger('vaas')
-        logger.info("UPDATE_IN_PLACE !!! new_data: {}".format(new_data))
 
+        try:
+            original_bundle.obj.old_clusters = [self.cluster.get_via_uri(cluster_uri)
+                                                for cluster_uri in original_bundle.data['cluster']]
+        except KeyError:
+            pass
+
+        logger.info("UPDATE_IN_PLACE !!! old_clusters: {}".format(original_bundle.obj.old_clusters))
         original_bundle.obj.new_data = new_data
+        try:
+            original_bundle.obj.new_clusters = [self.get_via_uri(cluster_uri) for cluster_uri in new_data['cluster']]
+        except KeyError:
+            pass
+
+        logger.info("UPDATE_IN_PLACE !!! new_clusters: {}".format(original_bundle.obj.new_clusters))
 
         return super(DirectorResource, self).update_in_place(request, original_bundle, new_data)
 

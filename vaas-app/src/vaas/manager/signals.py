@@ -164,22 +164,36 @@ def director_update(**kwargs):
     instance = kwargs['instance']
 
     clusters_to_refresh = get_clusters_to_refresh(instance)
-    logger.info("[director_update()] Clusters to refresh: {}".format(clusters_to_refresh))
+    logger.info("[director_update({})] Clusters to refresh: {}".format(instance, clusters_to_refresh))
     regenerate_and_reload_vcl(clusters_to_refresh)
 
 
 def get_clusters_to_refresh(instance):
+    logger = logging.getLogger('vaas')
     all_clusters = list(instance.cluster.all())
+
+    logger.info("[get_clusters_to_refresh()] all_clusters = {}".format(all_clusters))
     try:
+        new_clusters = instance.new_clusters
+        old_clusters = instance.old_clusters
         new_data = instance.new_data
         if set(new_data.keys()) != {'cluster'}:
             return all_clusters
-        new_clusters_set = set(new_data['cluster'])
-        if not new_clusters_set.issubset(set(all_clusters)):
-            return all_clusters
-        return list(new_clusters_set)
+        new_clusters_set = set(new_clusters)
+        old_clusters_set = set(old_clusters)
 
-    except AttributeError:
+        logger.info("[get_clusters_to_refresh()] new_clusters_set = {}".format(new_clusters_set))
+        logger.info("[get_clusters_to_refresh()] old_clusters_set = {}".format(old_clusters_set))
+
+        diff_clusters_set = old_clusters_set.symmetric_difference(new_clusters_set)
+
+        logger.info("[get_clusters_to_refresh()] diff_clusters_set = {}".format(diff_clusters_set))
+
+        if not diff_clusters_set.issubset(set(all_clusters)):
+            return all_clusters
+        return list(diff_clusters_set)
+
+    except (AttributeError, TypeError):
         return all_clusters
 
 
