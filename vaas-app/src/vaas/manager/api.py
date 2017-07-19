@@ -71,23 +71,49 @@ class DirectorResource(ModelResource):
             'cluster': ALL_WITH_RELATIONS
         }
 
+    def save_m2m(self, bundle):
+        logger = logging.getLogger('vaas')
+        logger.info("[API.save_m2m()] bundle = {}".format(bundle)) # tutaj już mamy: [<Bundle for obj: '<LogicalCluster: cluster1_siteA_test (2)>, <Bundle for obj: '<LogicalCluster: cluster2_siteB_test (2)>]
+
+        logger.info("[API.save_m2m()] bundle.data['cluster'] = {}".format(bundle.data['cluster']))
+
+        try:
+            old_uris = bundle.obj.old_clusters_uris
+            new_uris = bundle.obj.new_clusters_uris
+
+            old_clusters = [cluster.obj for cluster in bundle.data['cluster'] if cluster.data['resource_uri'] in old_uris]
+            new_clusters = [cluster.obj for cluster in bundle.data['cluster'] if cluster.data['resource_uri'] in new_uris]
+
+            bundle.obj.old_clusters = old_clusters
+            bundle.obj.new_clusters = new_clusters
+
+            logger.info("[API.save_m2m()] old_clusters = {}".format(old_clusters))
+            logger.info("[API.save_m2m()] new_clusters = {}".format(new_clusters))
+
+        except (AttributeError, KeyError):
+            pass
+
+        return super(DirectorResource, self).save_m2m(bundle)
+
     def update_in_place(self, request, original_bundle, new_data):
         logger = logging.getLogger('vaas')
 
         try:
-            original_bundle.obj.old_clusters = [self.cluster.get_via_uri(cluster_uri)
-                                                for cluster_uri in original_bundle.data['cluster']]
+            original_bundle.obj.old_clusters_uris = original_bundle.data['cluster']
         except KeyError:
+            original_bundle.obj.old_clusters_uris = []
             pass
 
-        logger.info("UPDATE_IN_PLACE !!! old_clusters: {}".format(original_bundle.obj.old_clusters))
-        original_bundle.obj.new_data = new_data
+        logger.info("UPDATE_IN_PLACE !!! old_clusters_uris: {}".format(original_bundle.obj.old_clusters_uris))
         try:
-            original_bundle.obj.new_clusters = [self.get_via_uri(cluster_uri) for cluster_uri in new_data['cluster']]
+            original_bundle.obj.new_clusters_uris = new_data['cluster']
         except KeyError:
+            original_bundle.obj.new_clusters_uris = []
             pass
 
-        logger.info("UPDATE_IN_PLACE !!! new_clusters: {}".format(original_bundle.obj.new_clusters))
+        original_bundle.obj.new_data = new_data
+
+        logger.info("UPDATE_IN_PLACE !!! new_clusters_uris: {}".format(original_bundle.obj.new_clusters_uris))
 
         return super(DirectorResource, self).update_in_place(request, original_bundle, new_data)
 
