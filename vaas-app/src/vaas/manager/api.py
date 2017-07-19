@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-import copy
 
 from tastypie.resources import ModelResource, ALL_WITH_RELATIONS
 from tastypie.authorization import Authorization

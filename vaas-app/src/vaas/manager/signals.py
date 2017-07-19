@@ -162,9 +162,10 @@ def clean_up_tags(sender, **kwargs):
 def director_update(**kwargs):
     logger = logging.getLogger('vaas')
     instance = kwargs['instance']
+    action = kwargs['action']
 
     clusters_to_refresh = get_clusters_to_refresh(instance)
-    logger.info("[director_update({})] Clusters to refresh: {}".format(instance, clusters_to_refresh))
+    logger.info("[director_update({}, action: {})] Clusters to refresh: {}".format(instance, action, clusters_to_refresh))
     regenerate_and_reload_vcl(clusters_to_refresh)
 
 
