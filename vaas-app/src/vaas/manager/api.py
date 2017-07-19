@@ -75,18 +75,16 @@ class DirectorResource(ModelResource):
         logger.info("[API.save_m2m()] bundle = {}".format(bundle)) # tutaj już mamy: [<Bundle for obj: '<LogicalCluster: cluster1_siteA_test (2)>, <Bundle for obj: '<LogicalCluster: cluster2_siteB_test (2)>]
 
         logger.info("[API.save_m2m()] bundle.data['cluster'] = {}".format(bundle.data['cluster']))
+        logger.info("[API.save_m2m()] bundle.obj.cluster.all() = {}".format(bundle.obj.cluster.all()))
 
         try:
-            old_uris = bundle.obj.old_clusters_uris
             new_uris = bundle.obj.new_clusters_uris
 
-            old_clusters = [cluster.obj for cluster in bundle.data['cluster'] if cluster.data['resource_uri'] in old_uris]
-            new_clusters = [cluster.obj for cluster in bundle.data['cluster'] if cluster.data['resource_uri'] in new_uris]
+            new_clusters = [cluster.obj for cluster in bundle.data['cluster']
+                            if cluster.data['resource_uri'] in new_uris]
 
-            bundle.obj.old_clusters = old_clusters
             bundle.obj.new_clusters = new_clusters
 
-            logger.info("[API.save_m2m()] old_clusters = {}".format(old_clusters))
             logger.info("[API.save_m2m()] new_clusters = {}".format(new_clusters))
 
         except (AttributeError, KeyError):
@@ -98,12 +96,12 @@ class DirectorResource(ModelResource):
         logger = logging.getLogger('vaas')
 
         try:
-            original_bundle.obj.old_clusters_uris = original_bundle.data['cluster']
-        except KeyError:
-            original_bundle.obj.old_clusters_uris = []
+            original_bundle.obj.old_clusters = list(original_bundle.obj.cluster.all())
+        except AttributeError:
+            original_bundle.obj.old_clusters = []
             pass
 
-        logger.info("UPDATE_IN_PLACE !!! old_clusters_uris: {}".format(original_bundle.obj.old_clusters_uris))
+        logger.info("UPDATE_IN_PLACE !!! old_clusters: {}".format(original_bundle.obj.old_clusters))
         try:
             original_bundle.obj.new_clusters_uris = new_data['cluster']
         except KeyError:
