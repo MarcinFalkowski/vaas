@@ -295,7 +295,8 @@ def test_vcl_update_only_changed_clusters_for_director():
         remove_path=False,
         time_profile=TimeProfile.objects.create(name='timeprofile2')
     )
-
+    director2.cluster.add(cluster3, cluster4)
+    director2.save()
 
     director2.old_clusters = [cluster3, cluster4]
     director2.new_clusters = [cluster4, cluster5]
@@ -309,22 +310,25 @@ def test_vcl_update_only_changed_clusters_for_director():
     with patch('vaas.manager.signals.regenerate_and_reload_vcl',return_value=None) as regenerate_and_reload_vcl_mock:
         kwargs = {'instance': director2, 'action': 'post_add'}
         director2.cluster.add(cluster5)
-        assert_equals([call([])], regenerate_and_reload_vcl_mock.call_args_list)
+        assert_equals([call([cluster5])], regenerate_and_reload_vcl_mock.call_args_list)
 
-    # should update all clusters when not only 'cluster' field changed
+    # should update all clusters when change metadata is not set
 
+    director2.cluster.clear()
+    director2.cluster.add(cluster3, cluster4)
     director2.save()
-    director2.new_data = {'cluster': object(), 'active_active': True}
+    del director2.new_clusters
+    del director2.old_clusters
 
     with patch('vaas.manager.signals.regenerate_and_reload_vcl', return_value=None) as regenerate_and_reload_vcl_mock:
         kwargs = {'instance': director2, 'action': 'pre_clear'}
-        director_update(**kwargs)
-        assert_equals([call([cluster3, cluster5])], regenerate_and_reload_vcl_mock.call_args_list)
+        director2.cluster.remove(cluster3)
+        assert_equals([call([cluster3, cluster4])], regenerate_and_reload_vcl_mock.call_args_list)
 
     with patch('vaas.manager.signals.regenerate_and_reload_vcl',return_value=None) as regenerate_and_reload_vcl_mock:
         kwargs = {'instance': director2, 'action': 'post_add'}
-        director_update(**kwargs)
-        assert_equals([call([])], regenerate_and_reload_vcl_mock.call_args_list)
+        director2.cluster.add(cluster5)
+        assert_equals([call([cluster4, cluster5])], regenerate_and_reload_vcl_mock.call_args_list)
 
     settings.SIGNALS = 'off'
 

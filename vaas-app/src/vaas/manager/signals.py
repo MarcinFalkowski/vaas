@@ -119,7 +119,7 @@ def vcl_update(sender, **kwargs):
                 clusters_to_refresh.append(cluster)
     # Director
     elif sender is Director:
-        if not is_cluster_update(instance):
+        if not is_only_cluster_update(instance):
             for cluster in instance.cluster.all():
                 logger.debug("vcl_update(): %s" % str(cluster))
                 if cluster not in clusters_to_refresh:
@@ -182,9 +182,6 @@ def get_clusters_to_refresh(instance):
 
     logger.info("[get_clusters_to_refresh()] all_clusters = {}".format(all_clusters))
     try:
-        new_data = instance.new_data
-        if set(new_data.keys()) != {'cluster'}:
-            return all_clusters
         new_clusters_set = set(instance.new_clusters)
         old_clusters_set = set(instance.old_clusters)
 
@@ -219,9 +216,9 @@ def reset_refreshed_clusters(director):
     director.refreshed_clusters = set()
 
 
-def is_cluster_update(instance):
+def is_only_cluster_update(instance):
     try:
-        return 'cluster' in instance.new_data
+        return set(instance.new_data.keys()) == {'cluster'}
     except AttributeError:
         return False
 
