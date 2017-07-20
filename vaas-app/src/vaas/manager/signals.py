@@ -202,7 +202,7 @@ def get_clusters_to_refresh(instance):
 
         logger.info("[get_clusters_to_refresh()] clusters_to_refresh_set = {}".format(clusters_to_refresh_set))
 
-        return list(clusters_to_refresh_set)
+        return list(clusters_to_refresh_set.intersection(set(all_clusters)))
 
     except (AttributeError, TypeError):
         return all_clusters
