@@ -151,6 +151,8 @@ def vcl_update(sender, **kwargs):
                         clusters_to_refresh.append(cluster)
 
     regenerate_and_reload_vcl(clusters_to_refresh)
+    if sender is Director:
+        reset_refreshed_clusters(instance)
 
 
 @receiver(pre_delete)
@@ -180,13 +182,11 @@ def get_clusters_to_refresh(instance):
 
     logger.info("[get_clusters_to_refresh()] all_clusters = {}".format(all_clusters))
     try:
-        new_clusters = instance.new_clusters
-        old_clusters = instance.old_clusters
         new_data = instance.new_data
         if set(new_data.keys()) != {'cluster'}:
             return all_clusters
-        new_clusters_set = set(new_clusters)
-        old_clusters_set = set(old_clusters)
+        new_clusters_set = set(instance.new_clusters)
+        old_clusters_set = set(instance.old_clusters)
 
         logger.info("[get_clusters_to_refresh()] new_clusters_set = {}".format(new_clusters_set))
         logger.info("[get_clusters_to_refresh()] old_clusters_set = {}".format(old_clusters_set))
@@ -202,17 +202,21 @@ def get_clusters_to_refresh(instance):
 
         logger.info("[get_clusters_to_refresh()] clusters_to_refresh_set = {}".format(clusters_to_refresh_set))
 
-        return list(clusters_to_refresh_set.intersection(set(all_clusters)))
+        return list(clusters_to_refresh_set)
 
     except (AttributeError, TypeError):
         return all_clusters
 
 
-def mark_cluster_as_refreshed(instance, clusters):
+def mark_cluster_as_refreshed(director, clusters):
     try:
-        instance.refreshed_clusters |= set(clusters)
+        director.refreshed_clusters |= set(clusters)
     except AttributeError:
-        instance.refreshed_clusters = set(clusters)
+        director.refreshed_clusters = set(clusters)
+
+
+def reset_refreshed_clusters(director):
+    director.refreshed_clusters = set()
 
 
 def is_cluster_update(instance):
