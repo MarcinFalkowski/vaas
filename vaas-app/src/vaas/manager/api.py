@@ -99,14 +99,12 @@ class DirectorResource(ModelResource):
             original_bundle.obj.old_clusters = list(original_bundle.obj.cluster.all())
         except AttributeError:
             original_bundle.obj.old_clusters = []
-            pass
 
         logger.info("UPDATE_IN_PLACE !!! old_clusters: {}".format(original_bundle.obj.old_clusters))
         try:
             original_bundle.obj.new_clusters_uris = new_data['cluster']
         except KeyError:
             original_bundle.obj.new_clusters_uris = []
-            pass
 
         original_bundle.obj.new_data = new_data
 

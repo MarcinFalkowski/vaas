@@ -168,9 +168,8 @@ def director_update(**kwargs):
     if action not in ['post_add', 'pre_remove', 'pre_clear']:
         return
 
-    logger.info("[director_update(sender: '{}')".format(kwargs['sender']))
     clusters_to_refresh = get_clusters_to_refresh(instance)
-    logger.info("[director_update({}, action: {})] Clusters to refresh: {}".format(instance, action, clusters_to_refresh))
+    logger.info("[director_update(instance={}, action={})] Clusters to refresh: {}".format(instance, action, clusters_to_refresh))
     regenerate_and_reload_vcl(clusters_to_refresh)
     mark_cluster_as_refreshed(instance, clusters_to_refresh)
 

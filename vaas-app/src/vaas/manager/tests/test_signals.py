@@ -270,7 +270,7 @@ def test_vcl_update_cluster_filter_for_director_via_related_manager():
     director1.cluster.add(cluster1)
 
     with patch('vaas.manager.signals.regenerate_and_reload_vcl', return_value=None) as regenerate_and_reload_vcl_mock:
-        kwargs = {'instance': director1}
+        kwargs = {'instance': director1, 'action': 'post_add'}
         director_update(**kwargs)
         assert_equals([call([cluster1])], regenerate_and_reload_vcl_mock.call_args_list)
 
