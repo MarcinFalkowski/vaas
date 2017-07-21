@@ -72,21 +72,11 @@ class DirectorResource(ModelResource):
 
     def save_m2m(self, bundle):
         logger = logging.getLogger('vaas')
-        logger.info("[API.save_m2m()] bundle = {}".format(bundle)) # tutaj już mamy: [<Bundle for obj: '<LogicalCluster: cluster1_siteA_test (2)>, <Bundle for obj: '<LogicalCluster: cluster2_siteB_test (2)>]
-
-        logger.info("[API.save_m2m()] bundle.data['cluster'] = {}".format(bundle.data['cluster']))
-        logger.info("[API.save_m2m()] bundle.obj.cluster.all() = {}".format(bundle.obj.cluster.all()))
-
         try:
             new_uris = bundle.obj.new_clusters_uris
-
-            new_clusters = [cluster.obj for cluster in bundle.data['cluster']
+            bundle.obj.new_clusters = [cluster.obj for cluster in bundle.data['cluster']
                             if cluster.data['resource_uri'] in new_uris]
-
-            bundle.obj.new_clusters = new_clusters
-
-            logger.info("[API.save_m2m()] new_clusters = {}".format(new_clusters))
-
+            logger.info("[DirectorResource.save_m2m()] new_clusters = {}".format(bundle.obj.new_clusters))
         except (AttributeError, KeyError):
             pass
 
@@ -94,21 +84,16 @@ class DirectorResource(ModelResource):
 
     def update_in_place(self, request, original_bundle, new_data):
         logger = logging.getLogger('vaas')
-
         try:
             original_bundle.obj.old_clusters = list(original_bundle.obj.cluster.all())
         except AttributeError:
             original_bundle.obj.old_clusters = []
-
-        logger.info("UPDATE_IN_PLACE !!! old_clusters: {}".format(original_bundle.obj.old_clusters))
+        logger.info("[DirectorResource.update_in_place()] old_clusters = {}".format(original_bundle.obj.old_clusters))
         try:
             original_bundle.obj.new_clusters_uris = new_data['cluster']
         except KeyError:
             original_bundle.obj.new_clusters_uris = []
-
         original_bundle.obj.new_data = new_data
-
-        logger.info("UPDATE_IN_PLACE !!! new_clusters_uris: {}".format(original_bundle.obj.new_clusters_uris))
 
         return super(DirectorResource, self).update_in_place(request, original_bundle, new_data)
 

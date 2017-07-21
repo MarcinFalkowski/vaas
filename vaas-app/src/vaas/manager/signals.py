@@ -171,36 +171,23 @@ def director_update(**kwargs):
         return
 
     clusters_to_refresh = get_clusters_to_refresh(instance)
-    logger.info("[director_update(instance={}, action={})] Clusters to refresh: {}".format(instance, action, clusters_to_refresh))
+    logger.info("[director_update(instance={}, action={})] Clusters to refresh: {}"
+                .format(instance, action, clusters_to_refresh))
     regenerate_and_reload_vcl(clusters_to_refresh)
     mark_cluster_as_refreshed(instance, clusters_to_refresh)
 
 
 def get_clusters_to_refresh(instance):
-    logger = logging.getLogger('vaas')
     all_clusters = list(instance.cluster.all())
-
-    logger.info("[get_clusters_to_refresh()] all_clusters = {}".format(all_clusters))
     try:
         new_clusters_set = set(instance.new_clusters)
         old_clusters_set = set(instance.old_clusters)
-
-        logger.info("[get_clusters_to_refresh()] new_clusters_set = {}".format(new_clusters_set))
-        logger.info("[get_clusters_to_refresh()] old_clusters_set = {}".format(old_clusters_set))
-
         diff_clusters_set = old_clusters_set.symmetric_difference(new_clusters_set)
-
-        logger.info("[get_clusters_to_refresh()] diff_clusters_set = {}".format(diff_clusters_set))
-
         try:
             clusters_to_refresh_set = diff_clusters_set.difference(instance.refreshed_clusters)
         except AttributeError:
             clusters_to_refresh_set = diff_clusters_set
-
-        logger.info("[get_clusters_to_refresh()] clusters_to_refresh_set = {}".format(clusters_to_refresh_set))
-
         return list(clusters_to_refresh_set.intersection(set(all_clusters)))
-
     except (AttributeError, TypeError):
         return all_clusters
 
